@@ -1,61 +1,45 @@
 "use client";
-import React from "react";
-import {
 
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import Image from "next/image";
-import axios from "axios";
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Card, CardContent, CardFooter } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import Image from 'next/image';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCurrency } from '@/context/CurrencyContext';
 
-export default function GameShop() {
+function Page() {
+
+  const [products, setProducts] = useState([]);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [comingSoon, setComingSoon] = useState([]);
+  const [carouselGames, setCarouselGames] = useState([]);
   const router = useRouter();
   const { convertPrice } = useCurrency();
 
-  const SectionHeader = ({ title }) => (
-    <div className="flex items-center mb-6">
-      <h2 className="text-2xl font-bold px-6 py-2 bg-[#2a293b] text-white relative rounded-md
-        before:content-[''] before:absolute before:inset-0 before:rounded-md
-        before:shadow-[0_0_10px_rgba(255,255,255,0.3)] before:animate-pulse">
-        {title}
-      </h2>
-      <div className="h-px bg-gradient-to-r from-[#2a293b] to-transparent flex-grow ml-4" />
-    </div>
-  )
-
-  const [products, setProducts] = useState([]);
-  const [comingSoon, setComingSoon] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [carouselGames, setCarouselGames] = useState([]);
-
   useEffect(() => {
+    // Obtener los productos desde la API (juegos disponibles)
     axios.get("http://localhost:8080/productos")
       .then(response => {
         const data = response.data;
-      
+        // Filtrar juegos de Nintendo
+        const bestSellers = data.filter(game => 
+          game.estado === true && game.categoria === "NINTENDO"
+        ).map(game => ({...game, type: 'bestSeller'}));
         
-        const bestSellers = data.filter(game => game.estado === true)
-          .map(game => ({...game, type: 'bestSeller'}));
-       
-        
-        const comingSoonGames = data.filter(game => game.estado === false)
-          .map(game => ({...game, type: 'comingSoon'}));
-        
+        const comingSoonGames = data.filter(game => 
+          game.estado === false && game.categoria === "NINTENDO"
+        ).map(game => ({...game, type: 'comingSoon'}));
         
         setProducts(bestSellers);
         setComingSoon(comingSoonGames);
+        // Combinar ambos para el carrusel
         setCarouselGames([...bestSellers, ...comingSoonGames]);
-        
       })
       .catch(error => {
-       
+        console.error("Error fetching data:", error);
       });
   }, []);
 
@@ -78,19 +62,22 @@ export default function GameShop() {
       setIsTransitioning(false);
     }, 250);
   };
-
+  
   const handleGameClick = (game) => {
     router.push(`/detallejuegos/${game.id}`);
   };
 
   return (
     <div className="flex flex-col min-h-screen bg-[#1c1b29]">
+     
+
       <main className="flex-grow container mx-auto px-4 py-8">
         
         <section className="mb-12">
           <div className="relative bg-[#2a293b] rounded-lg p-8 text-white overflow-hidden" style={{ height: '500px' }}>
             {carouselGames.length > 0 && (
               <>
+                
                 <div className="absolute top-0 left-0 w-full h-full opacity-20 transition-opacity duration-500 ease-in-out">
                   <Image
                     src={carouselGames[currentIndex].imagen}
@@ -135,16 +122,16 @@ export default function GameShop() {
                         style={{
                           transform: 'translateY(-20px)'
                         }}>
-                        <Image
-                          src={carouselGames[currentIndex].imagen}
-                          alt={carouselGames[currentIndex].nombre}
-                          fill
-                          style={{ 
-                            objectFit: 'contain'
-                          }}
-                          className="transition-all duration-500 ease-in-out"
-                          priority
-                        />
+                            <Image
+                              src={carouselGames[currentIndex].imagen}
+                              alt={carouselGames[currentIndex].nombre}
+                              fill
+                              style={{ 
+                                objectFit: 'contain'
+                              }}
+                              className="transition-all duration-500 ease-in-out"
+                              priority
+                            />
                       </div>
                     </div>
                   </div>
@@ -173,9 +160,8 @@ export default function GameShop() {
         </section>
         
         <section className="mb-12">
-          <SectionHeader title="BEST SELLERS" />
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-            {products.map((game) => (
+            {carouselGames.map((game) => (
               <Card 
                 key={game.id} 
                 className="bg-[#2a293b] border-none hover:scale-105 transition-transform duration-300 cursor-pointer"
@@ -208,46 +194,12 @@ export default function GameShop() {
             ))}
           </div>
         </section>
-
-        <section>
-          <SectionHeader title="COMING SOON" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-            {comingSoon.map((game) => (
-              <Card 
-                key={game.id} 
-                className="bg-[#2a293b] border-none hover:scale-105 transition-transform duration-300 cursor-pointer"
-                onClick={() => handleGameClick(game)}
-              >
-                <CardContent className="p-4 relative">
-                  <div className="relative aspect-[3/4] mb-4">
-                    <Image 
-                      src={game.imagen} 
-                      alt={game.nombre} 
-                      fill
-                      className="object-cover rounded-lg"
-                    />
-                    {game.descuento && (
-                      <span className="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
-                        {game.descuento}
-                      </span>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <span className="text-xs text-purple-400 uppercase font-semibold">GLOBAL</span>
-                    <h3 className="text-sm font-semibold text-white leading-tight">{game.nombre}</h3>
-                    <div className="text-white">
-                      <span className="text-sm">Desde</span>
-                      <div className="text-xl font-bold">{convertPrice(game.precio)}</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
+        
       </main>
-
       
     </div>
   );
 }
+
+export default Page;
+
