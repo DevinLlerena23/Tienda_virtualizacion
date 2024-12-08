@@ -26,6 +26,7 @@ function Page() {
   const [passwordError, setPasswordError] = useState('');
   const [telefono, setTelefono] = useState('');
   const [direccion, setDireccion] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -100,7 +101,8 @@ function Page() {
             contrasena: password,
             telefono: loginData.telefono,
             direccion: loginData.direccion,
-            token: loginData.token
+            token: loginData.token,
+            isAdmin: loginData.isAdmin
           });
           if (returnUrl) {
             router.push(returnUrl);
@@ -140,7 +142,8 @@ function Page() {
             contrasena: password,
             telefono: data.telefono || null,
             direccion: data.direccion || null,
-            token: data.token
+            token: data.token,
+            isAdmin: data.isAdmin
           });
           if (returnUrl) {
             router.push(returnUrl);

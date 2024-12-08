@@ -1,0 +1,34 @@
+.add-game-container {
+    max-width: 600px;
+    margin: 50px auto; /* Aumenta el margen superior para empujar el footer hacia abajo */
+    padding: 20px;
+    background-color: #1e1e2f; /* Color de fondo oscuro */
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    color: #ffffff; /* Texto blanco para contraste */
+  }
+  
+  .add-game-form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .input,
+  .textarea {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #444; /* Borde más oscuro */
+    border-radius: 4px;
+    font-size: 16px;
+    background-color: #2a2a3c; /* Fondo de los campos */
+    color: #ffffff; /* Texto blanco en los campos */
+  }
+  
+  .textarea {
+    resize: vertical; /* Permitir redimensionar verticalmente */
+  }
+  
+  .input::placeholder,
+  .textarea::placeholder {
+    color: #aaa; /* Color de los placeholders */
+  }

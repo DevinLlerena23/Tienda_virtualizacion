@@ -107,6 +107,9 @@ function Navbar() {
             >
               Nintendo
             </Link>
+            {user && user.isAdmin && (
+              <Link href="/addgame" className="text-gray-300 hover:text-white transition-colors">Agregar Juego</Link>
+            )}
           </div>
         </div>
         

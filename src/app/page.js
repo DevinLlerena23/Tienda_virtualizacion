@@ -10,13 +10,14 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import Image from "next/image";
 import axios from "axios";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from 'next/navigation';
 import { useCurrency } from '@/context/CurrencyContext';
 
 export default function GameShop() {
   const router = useRouter();
   const { convertPrice } = useCurrency();
+  const gamesContainerRef = useRef(null);
 
   const SectionHeader = ({ title }) => (
     <div className="flex items-center mb-6">
@@ -34,6 +35,8 @@ export default function GameShop() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [carouselGames, setCarouselGames] = useState([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 10; // Número de juegos por página
 
   useEffect(() => {
     axios.get("http://localhost:8080/productos")
@@ -83,9 +86,44 @@ export default function GameShop() {
     router.push(`/detallejuegos/${game.id}`);
   };
 
+  const totalPages = Math.ceil(products.length / itemsPerPage);
+  const paginatedProducts = products.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages - 1) {
+      setCurrentPage(prevPage => prevPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 0) {
+      setCurrentPage(prevPage => prevPage - 1);
+    }
+  };
+
+  const Pagination = ({ currentPage, totalPages, onPageChange }) => {
+    const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
+
+    return (
+      <div className="flex justify-center mt-4">
+        <Button onClick={() => onPageChange(0)} disabled={currentPage === 0} className="bg-[#9146ff] text-white hover:bg-[#7d3bda]">«</Button>
+        {pages.map((page) => (
+          <Button
+            key={page}
+            onClick={() => onPageChange(page - 1)}
+            className={`mx-1 ${currentPage === page - 1 ? 'bg-red-500 text-white' : 'bg-[#2a293b] text-white hover:bg-[#3a3a4a]'}`}
+          >
+            {page}
+          </Button>
+        ))}
+        <Button onClick={() => onPageChange(totalPages - 1)} disabled={currentPage === totalPages - 1} className="bg-[#9146ff] text-white hover:bg-[#7d3bda]">»</Button>
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-[#1c1b29]">
-      <main className="flex-grow container mx-auto px-4 py-8">
+      <main className="flex-grow container mx-auto px-4 py-8" ref={gamesContainerRef}>
         
         <section className="mb-12">
           <div className="relative bg-[#2a293b] rounded-lg p-8 text-white overflow-hidden" style={{ height: '500px' }}>
@@ -175,7 +213,7 @@ export default function GameShop() {
         <section className="mb-12">
           <SectionHeader title="BEST SELLERS" />
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-            {products.map((game) => (
+            {paginatedProducts.map((game) => (
               <Card 
                 key={game.id} 
                 className="bg-[#2a293b] border-none hover:scale-105 transition-transform duration-300 cursor-pointer"
@@ -207,6 +245,11 @@ export default function GameShop() {
               </Card>
             ))}
           </div>
+          <Pagination 
+            currentPage={currentPage} 
+            totalPages={totalPages} 
+            onPageChange={setCurrentPage} 
+          />
         </section>
 
         <section>
